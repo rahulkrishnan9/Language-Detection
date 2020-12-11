@@ -8,20 +8,14 @@ import cv2
 import tensorflow as tf
 
 
-def preprocess(img, imgSize, dataAugmentation=False):
-	"put img into target img of size imgSize, transpose for TF and normalize gray-values"
+def preprocess(img, imgSize):
+	"put img into target img of size imgSize, and resizes it, normalizing values"
 
-	# there are damaged files in IAM dataset - just use black image instead
+	# there are damaged files in dataset - just use black image instead
 	if img is None:
 		img = np.zeros([imgSize[1], imgSize[0]])
 
-	# increase dataset size by applying random stretches to the images
-	if dataAugmentation:
-		stretch = (random.random() - 0.5) # -0.5 .. +0.5
-		wStretched = max(int(img.shape[1] * (1 + stretch)), 1) # random width, but at least 1
-		img = cv2.resize(img, (wStretched, img.shape[0])) # stretch horizontally by factor 0.5 .. 1.5
-
-	# create target image and copy sample image into it
+	# resize the image
 	(wt, ht) = imgSize
 	(h, w) = img.shape
 	fx = w / wt
@@ -32,9 +26,6 @@ def preprocess(img, imgSize, dataAugmentation=False):
 	target = np.ones([wt, ht]) * 255
 	target[0:newSize[1], 0:newSize[0]] = img
 
-	# transpose for TF
-	#img = cv2.transpose(target)
-
 	# normalize
 	(m, s) = cv2.meanStdDev(img)
 	m = m[0][0]
@@ -44,14 +35,13 @@ def preprocess(img, imgSize, dataAugmentation=False):
 	return img
 
 class DataLoader:
-	"loads data which corresponds to IAM format, see: http://www.fki.inf.unibe.ch/databases/iam-handwriting-database"
+	"loads data and provides an easy way to get batches of data from the given dataset"
 
-	def __init__(self, filePath, batchSize, imgSize, maxTextLen):
+	def __init__(self, filePath, batchSize, imgSize):
 		"loader for dataset at given location, preprocess images and text according to parameters"
 
 		assert filePath[-1]=='/'
 
-		self.dataAugmentation = False
 		self.currIdx = 0
 		self.batchSize = batchSize
 		self.imgSize = imgSize
@@ -63,6 +53,6 @@ class DataLoader:
 	def getNext(self):
 		"iterator"
 		batchRange = range(self.currIdx, self.currIdx + self.batchSize)
-		imgs = [preprocess(cv2.imread(self.samples[i], cv2.IMREAD_GRAYSCALE), self.imgSize, self.dataAugmentation) for i in batchRange]
+		imgs = [preprocess(cv2.imread(self.samples[i], cv2.IMREAD_GRAYSCALE), self.imgSize) for i in batchRange]
 		self.currIdx += self.batchSize
 		return np.float32(np.array(imgs))
