@@ -2,6 +2,7 @@
 
 A lot of the base ideas and architecture come from:
 https://github.com/githubharald/SimpleHTR
+
 The first part of the architecture is very similar, both using several convolution layers to obtain a
 "features list" which was a series of features collected at different time stamps.
 Instead of using an LSTM like he did, however, we decided to mimic a rnn by creating
