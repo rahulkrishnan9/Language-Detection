@@ -12,3 +12,5 @@ We used a total of four data sets: One was a collection of handwriting from the 
 one was a collection of german handwriting from historical documents, and lastly
 we generated english and german datasets from text labels from the original datasets
 into png format in Courier font.
+
+Read more here: https://devpost.com/software/language-detection
